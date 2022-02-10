@@ -6,27 +6,55 @@ public class PlayerMovement : MonoBehaviour
 {
     // Start is called before the first frame update
     [SerializeField] float speed = 2f;
-
     [SerializeField] GameObject bulletPrefab;
-
     [SerializeField] GameObject shootPoint;
-
     [SerializeField] float cooldown = 2f;
+    [SerializeField] private bool canShoot = true;
+    [SerializeField] private float timePass = 0;
 
 
-     [SerializeField] private bool canShoot = true;
-
-     [SerializeField] private float timePass = 0;
-
+    private GameObject parentBullets;
     float cameraAxisX = 0f;
 
     void Start()
     {
-
+      parentBullets = GameObject.Find("DinamycBullets");   
     }
     void Update()
     {
-   
+        MovePlayer();
+        RotatePlaye();
+        ShootPlayer();
+
+    }
+
+    private void ShootPlayer()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && canShoot)
+        {
+            GameObject  newBullet = Instantiate(bulletPrefab, shootPoint.transform.position, transform.rotation);// PROYECTILES
+            //Instantiate(bulletPrefab, shootPoint.transform.position + Vector3.forward, bulletPrefab.transform.rotation);// PROYECTILES\
+            //Instantiate(bulletPrefab, shootPoint.transform.position + Vector3.back, bulletPrefab.transform.rotation);// PROYECTILES
+            newBullet.transform.parent = parentBullets.transform; 
+            canShoot = false;
+        }
+
+
+        if (!canShoot)
+        {
+            //timePass = timePass + Time.deltaTime;
+            timePass += Time.deltaTime;
+        } // !canShoot  !false == true
+
+        if (timePass > cooldown)
+        {
+            timePass = 0;
+            canShoot = true;
+        }
+    }
+
+    private void MovePlayer()
+    {
         //SI APRIETO W
         if (Input.GetKey(KeyCode.W))
         {
@@ -36,28 +64,6 @@ public class PlayerMovement : MonoBehaviour
         {
             MovePlayer(Vector3.back);
         }
-
-        RotatePlaye();
-
-        if (Input.GetKeyDown(KeyCode.E) && canShoot)
-        {
-            Instantiate(bulletPrefab, shootPoint.transform.position, bulletPrefab.transform.rotation);// PROYECTILES
-            Instantiate(bulletPrefab, shootPoint.transform.position + Vector3.forward, bulletPrefab.transform.rotation);// PROYECTILES\
-            Instantiate(bulletPrefab, shootPoint.transform.position + Vector3.back, bulletPrefab.transform.rotation);// PROYECTILES
-            canShoot = false;
-        }
-       
-      
-        if(!canShoot){
-            //timePass = timePass + Time.deltaTime;
-            timePass += Time.deltaTime;
-        } // !canShoot  !false == true
-
-        if(timePass > cooldown){
-            timePass = 0;
-            canShoot = true;
-        }
-
     }
 
     private void MovePlayer(Vector3 directionEnemy)
@@ -67,9 +73,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void RotatePlaye(){
         //1 UN VALOR PARA ROTAR EN Y
-        cameraAxisX += Input.GetAxis("Mouse X");   
+        cameraAxisX += Input.GetAxis("Horizontal");   
         //2 UN ANGULO A CALCULAR EN FUNCION DEL VALOR DEL PRIMER PASO
-        Quaternion angulo = Quaternion.Euler(0f,cameraAxisX, 0f);
+        Quaternion angulo = Quaternion.Euler(0f,cameraAxisX * 0.5f, 0f);
         //3 ROTAR
         transform.localRotation = angulo;
     }
